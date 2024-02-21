@@ -1,30 +1,33 @@
 class Motocicleta(
+    nombre:String,
     marca: String,
     modelo: String,
     capacidadCombustible: Float,
     combustibleActual: Float,
-    kilometrosActuales: Int,
+    kilometrosActuales: Float,
     val cilindrada:Int
-):Vehiculo(marca, modelo, capacidadCombustible, combustibleActual, kilometrosActuales) {
-    override fun calcularAutonomia(): Int {
-        return (combustibleActual*20).toInt()
+):Vehiculo(nombre, marca, modelo, capacidadCombustible, combustibleActual, kilometrosActuales) {
+    init {
+        comprobarCilindrada(cilindrada)
     }
-    override fun realizarViaje(distancia:Int):Int{
-        val kmporlitro = 20
-        if (distancia > calcularAutonomia()){
-            combustibleActual -= distancia/kmporlitro
-            kilometrosActuales += distancia
-            return 0
-        }
-        else{
-            val distanciarestante = distancia - calcularAutonomia()
-            combustibleActual -= (distancia - distanciarestante)/kmporlitro
-            kilometrosActuales += distancia - distanciarestante
-            return distanciarestante
-        }
+    companion object{
+        const val KM_POR_LITRO_MOTO_DEFAULT = 20f
     }
+    fun comprobarCilindrada(cilindrada: Int){
+        require(cilindrada in 125..1000){"La cilindrada no podrá ser inferior a 125 ni superior a 1000 cc"}
+    }
+    override fun obtenerKmLitro():Float{
+        return redondear(KM_POR_LITRO_MOTO_DEFAULT - ((1000 - cilindrada) / 1000.0f))
+    }
+    override fun calcularAutonomia(): Float {
+        if (cilindrada < 1000) {
+            return combustibleActual * obtenerKmLitro()
+        }
+        return combustibleActual* KM_POR_LITRO_MOTO_DEFAULT
+    }
+
     fun realizarCaballito():Float{
-        realizarViaje(5)
+        actualizarCombustible(6.5f/obtenerKmLitro())
         return combustibleActual
     }
 }

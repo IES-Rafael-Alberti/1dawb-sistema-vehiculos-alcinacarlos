@@ -1,37 +1,32 @@
 class Automovil(
+    nombre:String,
     marca: String,
     modelo: String,
     capacidadCombustible: Float,
     combustibleActual: Float,
-    kilometrosActuales: Int,
-    val esElectrico:Boolean
-):Vehiculo(marca, modelo, capacidadCombustible, combustibleActual, kilometrosActuales) {
-    override fun calcularAutonomia(): Int {
-        return if (esElectrico) (combustibleActual*5).toInt() else super.calcularAutonomia()
+    kilometrosActuales: Float,
+    val esHibrido:Boolean
+):Vehiculo(nombre, marca, modelo, capacidadCombustible, combustibleActual, kilometrosActuales) {
+    companion object{
+        const val AHORRO_ELECTRICO = KM_POR_LITRO + 5
+        var condicionBritanica:Boolean = false
+        fun cambiarCondicionBritanica(nuevaCondicion: Boolean){
+            condicionBritanica = nuevaCondicion
+        }
+    }
+    override fun calcularAutonomia(): Float {
+        return if (esHibrido) redondear(combustibleActual* AHORRO_ELECTRICO ) else super.calcularAutonomia()
+    }
+    override fun obtenerKmLitro(): Float {
+        return if (esHibrido) AHORRO_ELECTRICO else KM_POR_LITRO
     }
 
-    override fun realizarViaje(distancia:Int):Int{
-        val kmporlitro = if (esElectrico) 5 else 10
-        if (distancia > calcularAutonomia()){
-            combustibleActual -= distancia/kmporlitro
-            kilometrosActuales += distancia
-            return 0
-        }
-        else{
-            val distanciarestante = distancia - calcularAutonomia()
-            combustibleActual -= (distancia - distanciarestante)/kmporlitro
-            kilometrosActuales += distancia - distanciarestante
-            return distanciarestante
-        }
-    }
-    companion object{
-        var condicionBritania = false
-        fun cambiarCondicionBritania(condicion:Boolean){
-            condicionBritania = condicion
-        }
-    }
     fun realizarDerrape():Float{
-        realizarViaje(5)
+        try {
+            actualizarCombustible(if (esHibrido) 6.25f/obtenerKmLitro() else 7.5f/obtenerKmLitro())
+        }catch (e:IllegalArgumentException){
+            println(e)
+        }
         return combustibleActual
     }
 }
