@@ -4,7 +4,7 @@ class Carrera(
     val nombreCarrera: String,
     val distanciaTotal: Float,
     val participantes: List<Vehiculo>,
-    var estadoCarrera: Boolean,
+    var estadoCarrera: Boolean = false,
     var historialAcciones: MutableMap<String, MutableList<String>> = mutableMapOf(),
     posiciones: MutableList<Pair<String, Int>> = mutableListOf()
 ) {
@@ -26,6 +26,7 @@ class Carrera(
             determinarGanador()
         }
         verGanador()
+        obtenerResultados()
     }
 
     /**
@@ -99,13 +100,17 @@ class Carrera(
     /**
      * Devuelve una clasificación final de los vehículos, cada elemento tendrá el nombre del vehiculo, posición ocupada, la distancia total recorrida, el número de paradas para repostar y el historial de acciones. La collección estará ordenada por la posición ocupada.
      */
-    fun obtenerResultados(){
-        participantes.forEach { println(ResultadoCarrera(it, posiciones.find {pos-> pos.first == it.nombre }!!.second ,it.repostajes, historialAcciones[it.nombre])) }
+    fun obtenerResultados() {
+        participantes.forEach { participante ->
+            val posicion = posiciones.find { it.first == participante.nombre }
+            val posicionEnCarrera = posicion?.second ?: 0 // Si no se encuentra, asume posición 0
+            participantes.forEach { println(ResultadoCarrera(it, posicionEnCarrera, it.kilometrosActuales,it.repostajes, historialAcciones[it.nombre]!!))}
+        }
     }
     data class ResultadoCarrera(
         val vehiculo: Vehiculo,
         val posicion: Int,
-        val kilometraje: Int,
+        val kilometraje: Float,
         val paradasRepostaje: Int,
         val historialAcciones: List<String>
     )
@@ -114,6 +119,10 @@ class Carrera(
      * Añade una acción al historialAcciones del vehículo especificado.
      */
     fun registrarAccion(vehiculo: String, accion: String){
+
+    }
+
+    fun verGanador(){
 
     }
 }

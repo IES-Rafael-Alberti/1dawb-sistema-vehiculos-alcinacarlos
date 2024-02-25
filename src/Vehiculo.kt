@@ -56,7 +56,7 @@ open class Vehiculo(
         }
     }
     fun actualizarCombustible(combustible:Float){
-        if (combustible > combustibleActual) throw IllegalArgumentException("Deposito Vacío")
+        if (combustible <= 0) throw IllegalArgumentException("Deposito Vacío")
         else combustibleActual -= combustible
     }
     fun repostar(cantidad:Float = 0f): Float{
