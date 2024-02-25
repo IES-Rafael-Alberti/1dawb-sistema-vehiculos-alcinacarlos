@@ -8,7 +8,7 @@ class Carrera(
     var historialAcciones: MutableMap<String, MutableList<String>> = mutableMapOf(),
     posiciones: MutableList<Pair<String, Int>> = mutableListOf()
 ) {
-    var posiciones:MutableList<Pair<String, Int>> = participantes.map { vehiculo -> Pair(vehiculo.nombre, 0)}.toMutableList()
+    var posiciones:MutableList<Pair<String, Int>> = participantes.map { vehiculo -> Pair(vehiculo.nombre, vehiculo.kilometrosActuales.toInt())}.toMutableList()
     companion object{
         const val KM_SEGMENTO = 20f
         const val DISTANCIA_MINIMA = 10
@@ -25,7 +25,6 @@ class Carrera(
             actualizarPosiciones()
             determinarGanador()
         }
-        verGanador()
         obtenerResultados()
     }
 
@@ -34,6 +33,7 @@ class Carrera(
      */
     fun avanzarVehiculo(vehiculo: Vehiculo){
         var distanciaRandomRestante = Random.nextInt(DISTANCIA_MINIMA, DISTANCIA_MAXIMA).toFloat()
+        registrarAccion(vehiculo.nombre, "avanzar")
         while (distanciaRandomRestante > 0){
             var distanciaARecorrer = KM_SEGMENTO
 
@@ -54,8 +54,8 @@ class Carrera(
      * Reposta el vehículo seleccionado, incrementando su combustibleActual y registrando la acción en historialAcciones.
      */
     fun repostarVehiculo(vehiculo: Vehiculo, cantidad: Float = 0f){
-        vehiculo.repostar(cantidad)
         vehiculo.repostajes++
+        vehiculo.repostar(cantidad)
         registrarAccion(vehiculo.nombre, "repostar")
     }
 
@@ -83,7 +83,7 @@ class Carrera(
      * Actualiza posiciones con los kilómetros recorridos por cada vehículo después de cada iteración, manteniendo un seguimiento de la competencia.
      */
     fun actualizarPosiciones(){
-        posiciones = participantes.map { vehiculo -> Pair(vehiculo.nombre, 0)}.toMutableList()
+       posiciones = participantes.mapIndexed { index, vehiculo ->  Pair(vehiculo.nombre, (vehiculo.kilometrosActuales.toInt() - posiciones[index].second))}.toMutableList()
     }
 
     /**
@@ -101,28 +101,25 @@ class Carrera(
      * Devuelve una clasificación final de los vehículos, cada elemento tendrá el nombre del vehiculo, posición ocupada, la distancia total recorrida, el número de paradas para repostar y el historial de acciones. La collección estará ordenada por la posición ocupada.
      */
     fun obtenerResultados() {
-        participantes.forEach { participante ->
-            val posicion = posiciones.find { it.first == participante.nombre }
-            val posicionEnCarrera = posicion?.second ?: 0 // Si no se encuentra, asume posición 0
-            participantes.forEach { println(ResultadoCarrera(it, posicionEnCarrera, it.kilometrosActuales,it.repostajes, historialAcciones[it.nombre]!!))}
-        }
+        var posiciones2xd = posiciones.sortedByDescending { it.second }
+        println("!!!!!!!!!!!!Enohrabuena ${posiciones2xd[0].first}")
+        participantes.forEachIndexed { index, vehiculo -> println(ResultadoCarrera(vehiculo, posiciones.get(index).second, vehiculo.kilometrosActuales,vehiculo.repostajes)) }
     }
     data class ResultadoCarrera(
         val vehiculo: Vehiculo,
         val posicion: Int,
         val kilometraje: Float,
-        val paradasRepostaje: Int,
-        val historialAcciones: List<String>
-    )
+        val paradasRepostaje: Int
+    ){
+        override fun toString(): String {
+            return "$vehiculo".replace(if (vehiculo is Automovil) "Automovil" else "Motocicleta", vehiculo.nombre) + "\n Km Hechos: $posicion\n Paradas a repostar: $paradasRepostaje\n Acciones en carrera:"
+        }
+    }
 
     /**
      * Añade una acción al historialAcciones del vehículo especificado.
      */
     fun registrarAccion(vehiculo: String, accion: String){
-
-    }
-
-    fun verGanador(){
-
+        historialAcciones[vehiculo]?.add(accion)
     }
 }

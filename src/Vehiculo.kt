@@ -55,6 +55,10 @@ open class Vehiculo(
             return distancia
         }
     }
+
+    override fun toString(): String {
+        return "Nombre: $nombre, Marca: $marca, Modelo: $modelo, KMactuales: $kilometrosActuales"
+    }
     fun actualizarCombustible(combustible:Float){
         if (combustible <= 0) throw IllegalArgumentException("Deposito Vacío")
         else combustibleActual -= combustible
