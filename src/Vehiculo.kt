@@ -16,9 +16,9 @@ open class Vehiculo(
             field = redondear(value)
         }
 
-    /*
+    /**
     * Devuelve una cadena con información sobre el vehículo
-    *
+    * @return String
     * */
     fun obtenerInformacion():String{
         return "Con ${capacidadCombustible}km podemos recorrer ${calcularAutonomia()}"
