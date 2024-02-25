@@ -5,12 +5,14 @@ class Carrera(
     val distanciaTotal: Float,
     val participantes: List<Vehiculo>,
     var estadoCarrera: Boolean,
-    var historialAcciones: MutableMap<String, MutableList<String>>,
-    posiciones: MutableList<Pair<String, Int>>
+    var historialAcciones: MutableMap<String, MutableList<String>> = mutableMapOf(),
+    posiciones: MutableList<Pair<String, Int>> = mutableListOf()
 ) {
     var posiciones:MutableList<Pair<String, Int>> = participantes.map { vehiculo -> Pair(vehiculo.nombre, 0)}.toMutableList()
     companion object{
         const val KM_SEGMENTO = 20f
+        const val DISTANCIA_MINIMA = 10
+        const val DISTANCIA_MAXIMA = 200
     }
 
     /**
@@ -21,14 +23,16 @@ class Carrera(
         while (estadoCarrera){
             avanzarVehiculo(participantes.random())
             actualizarPosiciones()
+            determinarGanador()
         }
+        verGanador()
     }
 
     /**
      * Identificado el vehículo, le hace avanzar una distancia aleatoria entre 10 y 200 km. Si el vehículo necesita repostar, se llama al método repostarVehiculo() antes de que pueda continuar. Este método llama a realizar filigranas.
      */
     fun avanzarVehiculo(vehiculo: Vehiculo){
-        var distanciaRandomRestante = Random.nextInt(10, 200).toFloat()
+        var distanciaRandomRestante = Random.nextInt(DISTANCIA_MINIMA, DISTANCIA_MAXIMA).toFloat()
         while (distanciaRandomRestante > 0){
             var distanciaARecorrer = KM_SEGMENTO
 
@@ -37,7 +41,7 @@ class Carrera(
 
             }
             if (vehiculo.realizarViaje(distanciaARecorrer) == distanciaRandomRestante){
-                vehiculo.repostar()
+                repostarVehiculo(vehiculo)
                 vehiculo.realizarViaje(distanciaARecorrer)
             }
             realizarFiligrana(vehiculo)
@@ -48,8 +52,10 @@ class Carrera(
     /**
      * Reposta el vehículo seleccionado, incrementando su combustibleActual y registrando la acción en historialAcciones.
      */
-    fun repostarVehiculo(vehiculo: Vehiculo, cantidad: Float){
+    fun repostarVehiculo(vehiculo: Vehiculo, cantidad: Float = 0f){
         vehiculo.repostar(cantidad)
+        vehiculo.repostajes++
+        registrarAccion(vehiculo.nombre, "repostar")
     }
 
     /**
@@ -86,7 +92,6 @@ class Carrera(
         posiciones.forEachIndexed { index, (nombre, km)  ->
             if (km >= distanciaTotal){
                 estadoCarrera = false
-                return index
             }
         }
     }
@@ -95,8 +100,15 @@ class Carrera(
      * Devuelve una clasificación final de los vehículos, cada elemento tendrá el nombre del vehiculo, posición ocupada, la distancia total recorrida, el número de paradas para repostar y el historial de acciones. La collección estará ordenada por la posición ocupada.
      */
     fun obtenerResultados(){
-
+        participantes.forEach { println(ResultadoCarrera(it, posiciones.find {pos-> pos.first == it.nombre }!!.second ,it.repostajes, historialAcciones[it.nombre])) }
     }
+    data class ResultadoCarrera(
+        val vehiculo: Vehiculo,
+        val posicion: Int,
+        val kilometraje: Int,
+        val paradasRepostaje: Int,
+        val historialAcciones: List<String>
+    )
 
     /**
      * Añade una acción al historialAcciones del vehículo especificado.

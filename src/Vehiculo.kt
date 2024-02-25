@@ -6,8 +6,13 @@ open class Vehiculo(
     combustibleActual: Float,
     var kilometrosActuales: Float
 ) {
+    var repostajes = 0
+    init {
+        if (!setofVehiculo.add(nombre)) throw IllegalArgumentException("No puede existir dos vehiculso con el mismo nombre")
+    }
     companion object{
         const val KM_POR_LITRO = 10f
+        var setofVehiculo = mutableSetOf<String>()
     }
 
     val capacidadCombustible:Float = redondear(capacidadCombustible)
